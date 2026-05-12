@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mlflow
+  labels:
+    shard: internal
+spec:
+  host: mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com
+  to:
+    kind: Service
+    name: mlflow-proxy
+  port:
+    targetPort: proxy
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
