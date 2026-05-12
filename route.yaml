@@ -5,7 +5,6 @@ metadata:
   labels:
     shard: internal
 spec:
-  host: mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com
   to:
     kind: Service
     name: mlflow-proxy
