@@ -1,0 +1,64 @@
+# ServiceAccount for CI trace ingestion (rfe-autofixer, rfe-assessor, etc.)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow-ci-traces
+---
+# Role: push traces via /v1/traces endpoint
+# Used with --openshift-delegate-urls on the OAuth proxy.
+# The "services/traces" resource is a virtual resource for SAR checks —
+# it does not correspond to an actual Kubernetes resource.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-trace-writer
+rules:
+  - apiGroups: [""]
+    resources: ["services/traces"]
+    verbs: ["create"]
+---
+# Role: read access to MLflow UI and REST API (everything under /)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-reader
+rules:
+  - apiGroups: [""]
+    resources: ["services/mlflow"]
+    verbs: ["get"]
+---
+# Role: full access (UI, API, and trace ingestion)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-admin
+rules:
+  - apiGroups: [""]
+    resources: ["services/mlflow", "services/traces"]
+    verbs: ["*"]
+---
+# CI SA can push traces
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-ci-trace-writer
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-ci-traces
+roleRef:
+  kind: Role
+  name: mlflow-trace-writer
+  apiGroup: rbac.authorization.k8s.io
+---
+# CI SA can also call the MLflow REST API (experiment resolution)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-ci-reader
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-ci-traces
+roleRef:
+  kind: Role
+  name: mlflow-reader
+  apiGroup: rbac.authorization.k8s.io

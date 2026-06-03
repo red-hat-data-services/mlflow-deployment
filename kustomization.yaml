@@ -7,3 +7,4 @@ resources:
   - postgres-pvc.yaml
   - proxy-service.yaml
   - route.yaml
+  - rbac.yaml
