@@ -44,17 +44,17 @@ rules:
     resources: ["services/traces"]
     verbs: ["create"]
 ---
-# CI SA gets editor access (create/update experiments via kubernetes-auth)
+# CI SA gets read access (resolve experiments by name via kubernetes-auth)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: mlflow-ci-editor
+  name: mlflow-ci-reader
 subjects:
   - kind: ServiceAccount
     name: mlflow-ci-traces
 roleRef:
   kind: Role
-  name: mlflow-editor
+  name: mlflow-reader
   apiGroup: rbac.authorization.k8s.io
 ---
 # CI SA can push traces via /v1/traces (OAuth proxy gate)
