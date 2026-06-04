@@ -4,24 +4,24 @@ kind: ServiceAccount
 metadata:
   name: mlflow-ci-traces
 ---
-# Role: read-only access (browse UI, view traces and experiments)
+# Role: read-only access (browse UI, view all resources)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: mlflow-reader
 rules:
   - apiGroups: ["mlflow.kubeflow.org"]
-    resources: ["experiments", "registered_models"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
     verbs: ["get", "list"]
 ---
-# Role: editor access (read + create experiments, push traces)
+# Role: editor access (read + create/update, push traces)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: mlflow-editor
 rules:
   - apiGroups: ["mlflow.kubeflow.org"]
-    resources: ["experiments", "registered_models"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
     verbs: ["get", "list", "create", "update"]
 ---
 # Role: full admin access (editor + delete)
@@ -31,7 +31,7 @@ metadata:
   name: mlflow-admin
 rules:
   - apiGroups: ["mlflow.kubeflow.org"]
-    resources: ["experiments", "registered_models"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
     verbs: ["*"]
 ---
 # CI SA gets editor access (push traces, create experiments)
