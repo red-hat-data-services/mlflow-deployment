@@ -34,7 +34,17 @@ rules:
     resources: ["experiments", "registeredmodels", "datasets", "jobs"]
     verbs: ["*"]
 ---
-# CI SA gets editor access (push traces, create experiments)
+# Role: push traces via /v1/traces (OAuth proxy delegate-urls gate)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-trace-pusher
+rules:
+  - apiGroups: [""]
+    resources: ["services/traces"]
+    verbs: ["create"]
+---
+# CI SA gets editor access (create/update experiments via kubernetes-auth)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -45,4 +55,17 @@ subjects:
 roleRef:
   kind: Role
   name: mlflow-editor
+  apiGroup: rbac.authorization.k8s.io
+---
+# CI SA can push traces via /v1/traces (OAuth proxy gate)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-ci-trace-pusher
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-ci-traces
+roleRef:
+  kind: Role
+  name: mlflow-trace-pusher
   apiGroup: rbac.authorization.k8s.io
