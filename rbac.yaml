@@ -44,7 +44,7 @@ rules:
     resources: ["services/traces"]
     verbs: ["create"]
 ---
-# CI SA gets read access (resolve experiments by name via kubernetes-auth)
+# CI SA gets reader access (resolve experiments by name via kubernetes-auth)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
