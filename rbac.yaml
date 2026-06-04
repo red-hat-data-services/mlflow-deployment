@@ -4,61 +4,45 @@ kind: ServiceAccount
 metadata:
   name: mlflow-ci-traces
 ---
-# Role: push traces via /v1/traces endpoint
-# Used with --openshift-delegate-urls on the OAuth proxy.
-# The "services/traces" resource is a virtual resource for SAR checks —
-# it does not correspond to an actual Kubernetes resource.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: mlflow-trace-writer
-rules:
-  - apiGroups: [""]
-    resources: ["services/traces"]
-    verbs: ["create"]
----
-# Role: read access to MLflow UI and REST API (everything under /)
+# Role: read-only access (browse UI, view traces and experiments)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: mlflow-reader
 rules:
-  - apiGroups: [""]
-    resources: ["services/mlflow"]
-    verbs: ["get"]
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registered_models"]
+    verbs: ["get", "list"]
 ---
-# Role: full access (UI, API, and trace ingestion)
+# Role: editor access (read + create experiments, push traces)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-editor
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registered_models"]
+    verbs: ["get", "list", "create", "update"]
+---
+# Role: full admin access (editor + delete)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: mlflow-admin
 rules:
-  - apiGroups: [""]
-    resources: ["services/mlflow", "services/traces"]
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registered_models"]
     verbs: ["*"]
 ---
-# CI SA can push traces
+# CI SA gets editor access (push traces, create experiments)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: mlflow-ci-trace-writer
+  name: mlflow-ci-editor
 subjects:
   - kind: ServiceAccount
     name: mlflow-ci-traces
 roleRef:
   kind: Role
-  name: mlflow-trace-writer
-  apiGroup: rbac.authorization.k8s.io
----
-# CI SA can also call the MLflow REST API (experiment resolution)
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: mlflow-ci-reader
-subjects:
-  - kind: ServiceAccount
-    name: mlflow-ci-traces
-roleRef:
-  kind: Role
-  name: mlflow-reader
+  name: mlflow-editor
   apiGroup: rbac.authorization.k8s.io
