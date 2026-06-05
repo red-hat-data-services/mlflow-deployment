@@ -1,0 +1,60 @@
+# ============================================================================
+# ONE-TIME CLUSTER-ADMIN BOOTSTRAP — apply with `oc apply -f bootstrap/it-grant.yaml`
+#
+# The ambient-code tenant (both the ArgoCD account and namespace admins) cannot
+# create these resources themselves:
+#
+#   1. Roles granting mlflow.kubeflow.org/* and services/traces — blocked by
+#      Kubernetes privilege-escalation prevention (the tenant doesn't hold these
+#      permissions and lacks the 'escalate' verb).
+#   2. ClusterRoleBindings — cluster-scoped, not permitted for the tenant.
+#
+# This manifest grants the ArgoCD tenant account the 'escalate'/'bind' verbs so it
+# can manage the MLflow RBAC roles via GitOps (rbac.yaml), and creates the
+# auth-delegator binding the OAuth proxy needs for TokenReview.
+#
+# After this is applied once, ArgoCD reconciles rbac.yaml automatically.
+# ============================================================================
+---
+# Let the ArgoCD tenant account manage RBAC in the mlflow namespace.
+# 'escalate' allows creating Roles with rules the account doesn't itself hold;
+# 'bind' allows creating RoleBindings to those Roles.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-rbac-manager
+  namespace: ambient-code--mlflow
+rules:
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete",
+            "escalate", "bind"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-rbac-manager
+  namespace: ambient-code--mlflow
+subjects:
+  - kind: ServiceAccount
+    name: tenantaccess-argocd-account
+    namespace: ambient-code--config
+roleRef:
+  kind: Role
+  name: mlflow-rbac-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+# OAuth proxy needs auth-delegator to validate Bearer tokens via the
+# TokenReview API. Cluster-scoped, so it must be applied by a cluster-admin.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mlflow-oauth-proxy-auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: mlflow
+    namespace: ambient-code--mlflow
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io
