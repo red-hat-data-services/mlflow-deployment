@@ -1,0 +1,15 @@
+# OAuth proxy needs auth-delegator to validate Bearer tokens via TokenReview.
+# This is a ClusterRoleBinding (cluster-scoped) — it must NOT have a namespace
+# set by Kustomize. Include it via a separate ArgoCD source without namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mlflow-oauth-proxy-auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: mlflow
+    namespace: ambient-code--mlflow
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io

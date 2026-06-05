@@ -1,0 +1,71 @@
+# ServiceAccount for CI trace ingestion (rfe-autofixer, rfe-assessor, etc.)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow-ci-traces
+---
+# Role: read-only access (browse UI, view all resources)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-reader
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
+    verbs: ["get", "list"]
+---
+# Role: editor access (read + create/update, push traces)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-editor
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
+    verbs: ["get", "list", "create", "update"]
+---
+# Role: full admin access (editor + delete)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-admin
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
+    verbs: ["*"]
+---
+# Role: push traces via /v1/traces (OAuth proxy delegate-urls gate)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-trace-pusher
+rules:
+  - apiGroups: [""]
+    resources: ["services/traces"]
+    verbs: ["create"]
+---
+# CI SA gets reader access (resolve experiments by name via kubernetes-auth)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-ci-reader
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-ci-traces
+roleRef:
+  kind: Role
+  name: mlflow-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+# CI SA can push traces via /v1/traces (OAuth proxy gate)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-ci-trace-pusher
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-ci-traces
+roleRef:
+  kind: Role
+  name: mlflow-trace-pusher
+  apiGroup: rbac.authorization.k8s.io
