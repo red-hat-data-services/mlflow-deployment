@@ -11,8 +11,16 @@ oc apply -f bootstrap/it-grant.yaml
 
 | Resource | Why it can't be tenant-managed |
 |----------|-------------------------------|
-| `Role/mlflow-rbac-manager` + binding | Grants the ArgoCD tenant account `escalate`/`bind` on roles so it can manage the MLflow RBAC roles (`rbac.yaml`) via GitOps. Without it, ArgoCD hits privilege-escalation prevention. |
-| `ClusterRoleBinding/mlflow-oauth-proxy-auth-delegator` | The OAuth proxy needs `system:auth-delegator` for TokenReview. ClusterRoleBindings are cluster-scoped and not permitted for the tenant. |
+| `Role/mlflow-rbac-manager` + binding | Grants the ArgoCD tenant account the exact MLflow permissions the managed roles delegate, so it can create them via GitOps (`rbac.yaml`) without hitting privilege-escalation prevention. Uses scoped permissions rather than the broad `escalate` verb. |
+| `ClusterRoleBinding/mlflow-oauth-proxy-auth-delegator` | The OAuth proxy needs `system:auth-delegator` for TokenReview. TokenReview is cluster-scoped (no namespaced equivalent), so this can't be tenant-managed. |
+
+### Why scoped permissions instead of `escalate`
+
+`escalate` on roles is a blank check — it would let the ArgoCD account create a
+Role granting *any* permission (secrets, etc.) and bind it. Instead, we grant the
+account exactly the permissions the MLflow roles delegate, so it can only ever
+delegate those. Since `mlflow.kubeflow.org` has no CRDs, these permissions are
+virtual (used only by MLflow's SAR checks) and grant nothing actionable.
 
 ## After applying
 

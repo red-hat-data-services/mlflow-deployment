@@ -6,29 +6,42 @@
 #
 #   1. Roles granting mlflow.kubeflow.org/* and services/traces — blocked by
 #      Kubernetes privilege-escalation prevention (the tenant doesn't hold these
-#      permissions and lacks the 'escalate' verb).
+#      permissions).
 #   2. ClusterRoleBindings — cluster-scoped, not permitted for the tenant.
 #
-# This manifest grants the ArgoCD tenant account the 'escalate'/'bind' verbs so it
-# can manage the MLflow RBAC roles via GitOps (rbac.yaml), and creates the
-# auth-delegator binding the OAuth proxy needs for TokenReview.
+# This manifest grants the ArgoCD tenant account exactly the permissions the
+# MLflow RBAC roles delegate, so it can manage them via GitOps (rbac.yaml)
+# WITHOUT the broad `escalate` verb. It also creates the auth-delegator binding
+# the OAuth proxy needs for TokenReview.
 #
 # After this is applied once, ArgoCD reconciles rbac.yaml automatically.
 # ============================================================================
 ---
-# Let the ArgoCD tenant account manage RBAC in the mlflow namespace.
-# 'escalate' allows creating Roles with rules the account doesn't itself hold;
-# 'bind' allows creating RoleBindings to those Roles.
+# Grant the ArgoCD tenant account the permissions it must delegate. Because it
+# now *holds* these permissions, it satisfies the privilege-escalation check
+# when creating the MLflow roles — no `escalate` (blank-check) verb required.
+#
+# Note: mlflow.kubeflow.org has no CRDs; these permissions are virtual (used
+# only by MLflow's SubjectAccessReview checks), so holding them grants the
+# ArgoCD account nothing actionable beyond satisfying RBAC bookkeeping.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: mlflow-rbac-manager
   namespace: ambient-code--mlflow
 rules:
+  # Manage the Role/RoleBinding objects themselves
   - apiGroups: ["rbac.authorization.k8s.io"]
     resources: ["roles", "rolebindings"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete",
-            "escalate", "bind"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Hold the permissions the managed roles delegate (mlflow-reader/editor/admin)
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments", "registeredmodels", "datasets", "jobs"]
+    verbs: ["*"]
+  # Hold the permission the trace-pusher role delegates
+  - apiGroups: [""]
+    resources: ["services/traces"]
+    verbs: ["create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -45,7 +58,8 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 # OAuth proxy needs auth-delegator to validate Bearer tokens via the
-# TokenReview API. Cluster-scoped, so it must be applied by a cluster-admin.
+# TokenReview API. TokenReview is cluster-scoped (no namespaced equivalent),
+# so this must be a ClusterRoleBinding applied by a cluster-admin.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
