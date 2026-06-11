@@ -52,6 +52,9 @@ subjects:
   - kind: ServiceAccount
     name: tenantaccess-argocd-account
     namespace: ambient-code--config
+  - kind: Group
+    name: ambient-code-support
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: mlflow-rbac-manager
