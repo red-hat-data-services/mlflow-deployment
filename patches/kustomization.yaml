@@ -8,3 +8,4 @@ configMapGenerator:
   - name: mlflow-patches
     files:
       - abstract_store.py=workspace-name-validator.py
+      - workspace_utils.py=workspace-utils.py
