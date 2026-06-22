@@ -8,3 +8,4 @@ resources:
   - proxy-service.yaml
   - route.yaml
   - rbac.yaml
+  - experiments/
