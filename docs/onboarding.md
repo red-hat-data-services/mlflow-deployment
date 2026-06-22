@@ -67,19 +67,38 @@ Set these variables on your GitLab project (Settings → CI/CD → Variables):
 
 ### 4. Add trace push to your CI pipeline
 
-If your agent uses the `agentic-ci` framework (>= 0.3.8), the trace push is built in. The `MLFLOW_*` environment variables are picked up automatically.
+Add a separate `trace-push` job to your `.gitlab-ci.yml` that runs after the agent job. The job downloads the `claude-otel.jsonl` artifact and pushes traces to MLflow:
 
-If your agent uses a custom `run-claude.sh` script, add the trace push after the agent exits:
-
-```bash
-pip install agentic-ci
-
-agentic-ci mlflow-push "$OTEL_LOG_FILE" \
-  --endpoint "$MLFLOW_TRACKING_URI" \
-  --experiment "$MLFLOW_EXPERIMENT_NAME" \
-  --token "$MLFLOW_TRACKING_TOKEN" \
-  || echo "WARNING: trace push failed (non-blocking)"
+```yaml
+trace-push:
+  stage: observe    # add 'observe' to your stages list
+  tags:
+    - aipcc-small-x86_64
+  image: registry.access.redhat.com/ubi9/python-312:latest
+  needs:
+    - job: <your-agent-job>
+      artifacts: true
+  rules:
+    - if: $MLFLOW_TRACKING_URI && $MLFLOW_EXPERIMENT_NAME
+  allow_failure: true
+  retry:
+    max: 2
+    when: script_failure
+  script:
+    - pip install -q agentic-ci
+    - agentic-ci mlflow-push claude-otel.jsonl
+        --endpoint "$MLFLOW_TRACKING_URI"
+        --experiment "$MLFLOW_EXPERIMENT_NAME"
+        --token "$MLFLOW_TRACKING_TOKEN"
 ```
+
+The job:
+- Only runs when `MLFLOW_TRACKING_URI` and `MLFLOW_EXPERIMENT_NAME` are set
+- Retries automatically up to 2 times on failure
+- Never blocks the pipeline (`allow_failure: true`)
+- Can be retried manually from the GitLab UI at any time
+
+See `rfe-assessor/.gitlab-ci.yml` for a working example.
 
 ## What maintainers can do
 
