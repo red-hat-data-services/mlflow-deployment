@@ -1,0 +1,41 @@
+# MLflow experiment onboarding template
+#
+# To onboard a new agent:
+#   1. Copy this file to experiments/<experiment-name>.yaml
+#   2. Replace EXPERIMENT_NAME with the experiment name and add user(s)
+#   3. Add the file to experiments/kustomization.yaml resources
+#   4. Open a PR
+#
+# After the PR is merged:
+#   - An MLflow admin creates the experiment in the MLflow UI
+#   - The agent maintainer sets CI variables on their GitLab project:
+#       MLFLOW_TRACKING_URI:    https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com
+#       MLFLOW_TRACKING_TOKEN:  (provided by the MLflow admin)
+#       MLFLOW_EXPERIMENT_NAME: <experiment-name>
+#
+---
+# Scoped role: grants access to a single experiment
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-EXPERIMENT_NAME
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    resourceNames: ["EXPERIMENT_NAME"]
+    verbs: ["get", "list", "update", "delete"]
+---
+# Bind the experiment maintainer(s)
+# Add additional subjects for each user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-EXPERIMENT_NAME-admin
+subjects:
+  - kind: User
+    name: USER@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-EXPERIMENT_NAME
+  apiGroup: rbac.authorization.k8s.io

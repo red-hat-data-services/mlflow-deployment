@@ -1,0 +1,31 @@
+# rfe-assessor experiment
+# Agent: https://gitlab.com/redhat/rhel-ai/agentic-ci/rfe-assessor
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-rfe-assessor
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    resourceNames: ["rfe-assessor"]
+    verbs: ["get", "list", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-rfe-assessor-admin
+subjects:
+  - kind: User
+    name: astefanu@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jforrest@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jgreene@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-rfe-assessor
+  apiGroup: rbac.authorization.k8s.io
