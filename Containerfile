@@ -38,6 +38,12 @@ COPY --from=vanilla-ui \
     /usr/local/lib/python3.10/site-packages/mlflow/server/js/build/ \
     /usr/local/lib/python3.12/site-packages/mlflow/server/js/build/
 
+# Patch: allow double hyphens in workspace/namespace names (upstream bug)
+# set_server_request_workspace validates the name even when workspaces
+# are disabled, and the pod namespace may contain consecutive hyphens.
+RUN sed -i "s/(?!.*--)//" \
+    /usr/local/lib/python3.12/site-packages/mlflow/store/workspace/abstract_store.py
+
 # Patch: fall back to pod namespace when workspaces are disabled
 COPY patches/middleware-pod-namespace.py /tmp/middleware-patch.py
 RUN python3.12 /tmp/middleware-patch.py && rm /tmp/middleware-patch.py
