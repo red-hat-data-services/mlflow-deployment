@@ -84,6 +84,9 @@ trace-push:
   retry:
     max: 2
     when: script_failure
+  before_script:
+    - curl -sL https://certs.corp.redhat.com/certs/2022-IT-Root-CA.pem -o /tmp/RH-IT-Root-CA.pem
+    - export REQUESTS_CA_BUNDLE=/tmp/RH-IT-Root-CA.pem
   script:
     - pip install -q agentic-ci
     - agentic-ci mlflow-push claude-otel.jsonl
@@ -91,6 +94,8 @@ trace-push:
         --experiment "$MLFLOW_EXPERIMENT_NAME"
         --token "$MLFLOW_TRACKING_TOKEN"
 ```
+
+The `before_script` installs the Red Hat IT Root CA so that Python's `requests` library trusts the MLflow Route's TLS certificate. The `ubi9/python-312` image does not include internal CAs by default.
 
 The job:
 - Only runs when `MLFLOW_TRACKING_URI` and `MLFLOW_EXPERIMENT_NAME` are set
