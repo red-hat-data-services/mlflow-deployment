@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - rfe-assessor.yaml
+  - midstream-skill-corrections.yaml
