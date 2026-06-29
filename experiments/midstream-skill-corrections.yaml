@@ -1,0 +1,32 @@
+# midstream-skill-corrections experiment
+# Agent: RHAIIS midstream "push-trace" skill (interactive conversation traces +
+#        heuristically-detected skill corrections, pushed via the MLflow tracing API)
+# Source: https://github.com/neuralmagic/rhaiis-midstream-snippets (plugins/midstream/skills/push-trace)
+---
+# Scoped role: grants access to a single experiment
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-experiment-midstream-skill-corrections
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    resourceNames: ["midstream-skill-corrections"]
+    verbs: ["get", "list", "update", "delete"]
+---
+# Bind the experiment maintainer(s) — add a subject per midstream teammate
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-experiment-midstream-skill-corrections
+subjects:
+  - kind: User
+    name: whardy@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  # - kind: User
+  #   name: <teammate>@redhat.com
+  #   apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-experiment-midstream-skill-corrections
+  apiGroup: rbac.authorization.k8s.io
