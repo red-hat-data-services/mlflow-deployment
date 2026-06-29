@@ -1,0 +1,44 @@
+# MLflow dataset onboarding template
+#
+# Datasets are governed independently of experiments — a dataset can be linked
+# to several experiments — so they get their own scoped role and binding,
+# separate from any mlflow-experiment-EXPERIMENT_NAME role.
+#
+# To grant maintainers access to a dataset:
+#   1. Copy this file to experiments/<dataset-name>-dataset.yaml
+#   2. Replace DATASET_NAME and add user(s)
+#   3. Add the file to experiments/kustomization.yaml resources
+#   4. Open a PR
+#
+# After the PR is merged:
+#   - An MLflow admin creates the dataset in the MLflow UI. Creation is
+#     admin-only — the "create" verb cannot be name-scoped.
+#   - Maintainers fill and maintain it (add/update records, set tags, link it
+#     to experiments) via the "update" verb.
+#
+---
+# Scoped role: manage a single dataset
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-dataset-DATASET_NAME
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["datasets"]
+    resourceNames: ["DATASET_NAME"]
+    verbs: ["get", "list", "update", "delete"]
+---
+# Bind the dataset maintainer(s)
+# Add additional subjects for each user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-dataset-DATASET_NAME
+subjects:
+  - kind: User
+    name: USER@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-dataset-DATASET_NAME
+  apiGroup: rbac.authorization.k8s.io
