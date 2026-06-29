@@ -18,7 +18,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: mlflow-EXPERIMENT_NAME
+  name: mlflow-experiment-EXPERIMENT_NAME
 rules:
   - apiGroups: ["mlflow.kubeflow.org"]
     resources: ["experiments"]
@@ -30,12 +30,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: mlflow-EXPERIMENT_NAME-admin
+  name: mlflow-experiment-EXPERIMENT_NAME
 subjects:
   - kind: User
     name: USER@redhat.com
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
-  name: mlflow-EXPERIMENT_NAME
+  name: mlflow-experiment-EXPERIMENT_NAME
   apiGroup: rbac.authorization.k8s.io

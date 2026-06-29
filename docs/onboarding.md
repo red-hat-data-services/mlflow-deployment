@@ -22,7 +22,7 @@ Copy `experiments/_template.yaml` to `experiments/<experiment-name>.yaml`:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: mlflow-<experiment-name>
+  name: mlflow-experiment-<experiment-name>
 rules:
   - apiGroups: ["mlflow.kubeflow.org"]
     resources: ["experiments"]
@@ -32,14 +32,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: mlflow-<experiment-name>-admin
+  name: mlflow-experiment-<experiment-name>
 subjects:
   - kind: User
     name: <user>@redhat.com
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
-  name: mlflow-<experiment-name>
+  name: mlflow-experiment-<experiment-name>
   apiGroup: rbac.authorization.k8s.io
 ```
 
@@ -53,7 +53,7 @@ resources:
 
 ### 2. MLflow admin creates the experiment
 
-After the PR is merged, an MLflow admin creates the experiment in the [MLflow UI](https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com/).
+After the PR is merged, an MLflow admin creates the experiment in the [MLflow UI](https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com/). To grant access to datasets too, see [Managing datasets](#managing-datasets) — they are onboarded with their own role.
 
 ### 3. Set CI variables
 
@@ -118,6 +118,44 @@ With the per-experiment role, maintainers can:
 | Delete the experiment | Yes |
 | Create new experiments | No (admin only) |
 | View other experiments | No |
+| Read datasets | Yes (all — every authenticated user) |
+| Maintain a named dataset (records, tags, delete) | Yes, if granted (see below) |
+| Create datasets | No (admin only) |
+
+## Managing datasets
+
+Datasets are first-class RBAC resources (`mlflow.kubeflow.org/datasets`), governed like experiments — but **not owned by an experiment** (a dataset can be linked to several). So they get their **own** scoped role and binding, separate from any `mlflow-experiment-<experiment-name>` role, onboarded with [`experiments/_dataset-template.yaml`](../experiments/_dataset-template.yaml).
+
+- **Read** — every authenticated user can already read all datasets via the shared `mlflow-reader` role. No grant needed.
+- **Create** — admin-only, like experiments. The `create` verb cannot be name-scoped, so it is never granted to maintainers; an MLflow admin creates the dataset.
+- **Maintain** — copy `experiments/_dataset-template.yaml` to `experiments/<dataset-name>-dataset.yaml`, set the name and user(s), and add it to `experiments/kustomization.yaml`. It grants name-scoped management of that one dataset:
+
+  ```yaml
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: mlflow-dataset-<dataset-name>
+  rules:
+    - apiGroups: ["mlflow.kubeflow.org"]
+      resources: ["datasets"]
+      resourceNames: ["<dataset-name>"]
+      verbs: ["get", "list", "update", "delete"]
+  ---
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: mlflow-dataset-<dataset-name>
+  subjects:
+    - kind: User
+      name: <user>@redhat.com
+      apiGroup: rbac.authorization.k8s.io
+  roleRef:
+    kind: Role
+    name: mlflow-dataset-<dataset-name>
+    apiGroup: rbac.authorization.k8s.io
+  ```
+
+Because creation is admin-only, dataset tooling must target a **pre-existing** dataset and upsert records into it (an `update`) rather than calling create — the same way trace/eval tooling pushes to a pre-created experiment. (The agent-eval-harness `sync_dataset` does create-then-upsert, so point it at an admin-created dataset and it will only upsert.)
 
 ## Trace export requirements
 
