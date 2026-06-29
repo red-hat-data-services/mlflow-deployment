@@ -14,18 +14,54 @@ rules:
     resourceNames: ["midstream-skill-corrections"]
     verbs: ["get", "list", "update", "delete"]
 ---
-# Bind the experiment maintainer(s) — add a subject per midstream teammate
+# Bind the experiment maintainer(s): Selbi Siddiqi's team
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: mlflow-experiment-midstream-skill-corrections
 subjects:
   - kind: User
+    name: aottimo@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: bwhorton@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: cmiyai@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: dahuang@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: dbarbuzz@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: deepakku@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: dosmith@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: dtrifiro@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: equarmjn@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: mwoodson@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: takumar@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: tmuttaki@redhat.com
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
     name: whardy@redhat.com
     apiGroup: rbac.authorization.k8s.io
-  # - kind: User
-  #   name: <teammate>@redhat.com
-  #   apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: yakif@redhat.com
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: mlflow-experiment-midstream-skill-corrections
