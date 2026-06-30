@@ -106,26 +106,10 @@ Route's certificate (the `ubi9/python-312` image has no internal CAs). The job:
 - never blocks the pipeline (`allow_failure: true`)
 - can be retried manually from the GitLab UI at any time
 
-See `rfe-assessor/.gitlab-ci.yml` for a working example.
-
-### Capturing the traces
-
-The push job sends `claude-otel.jsonl`, which agentic-ci produces by exporting
-the agent's OTel spans to a local collector. agentic-ci (>= 0.3.8) wires this up
-automatically — see the
-[agentic-ci MLflow traces docs](https://github.com/opendatahub-io/agentic-ci/blob/main/docs/mlflow-traces.md).
-For Claude Code, these environment variables enable full span export with content:
-
-| Variable | Value |
-|----------|-------|
-| `OTEL_TRACES_EXPORTER` | `otlp` |
-| `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA` | `1` |
-| `OTEL_LOG_USER_PROMPTS` | `1` |
-| `OTEL_LOG_TOOL_DETAILS` | `1` |
-| `OTEL_LOG_TOOL_CONTENT` | `1` |
-
-Other agent CLIs (e.g. OpenCode) use their own OTel configuration — refer to the
-agentic-ci harness documentation.
+See `rfe-assessor/.gitlab-ci.yml` for a working example. The `claude-otel.jsonl`
+artifact is produced automatically by agentic-ci (>= 0.3.8) — see its
+[MLflow traces docs](https://github.com/opendatahub-io/agentic-ci/blob/main/docs/mlflow-traces.md)
+for how capture is configured.
 
 ## 2. agent-eval-harness (`/eval-mlflow`)
 
