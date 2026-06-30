@@ -17,13 +17,13 @@ metadata:
   name: mlflow-rfe-assessor-admin
 subjects:
   - kind: User
-    name: astefanu@redhat.com
+    name: astefanu
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: jforrest@redhat.com
+    name: jforrest
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: jgreene@redhat.com
+    name: jgreene
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
