@@ -82,7 +82,7 @@ metadata:
   name: mlflow-admin
 subjects:
   - kind: User
-    name: astefanu@redhat.com
+    name: astefanu
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role

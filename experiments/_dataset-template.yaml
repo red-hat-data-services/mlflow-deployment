@@ -28,15 +28,17 @@ rules:
     resourceNames: ["DATASET_NAME"]
     verbs: ["get", "list", "update", "delete"]
 ---
-# Bind the dataset maintainer(s)
-# Add additional subjects for each user
+# Bind the dataset maintainer(s) — one subject per user.
+# IMPORTANT: `name` is the user's OpenShift username (`oc whoami`), NOT their
+# email — this cluster authenticates by bare username, so an email subject
+# grants nothing.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: mlflow-dataset-DATASET_NAME
 subjects:
   - kind: User
-    name: USER@redhat.com
+    name: USER
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role

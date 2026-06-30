@@ -37,13 +37,18 @@ metadata:
   name: mlflow-experiment-<experiment-name>
 subjects:
   - kind: User
-    name: <user>@redhat.com
+    name: <user>
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: mlflow-experiment-<experiment-name>
   apiGroup: rbac.authorization.k8s.io
 ```
+
+> The RoleBinding `name` is each user's **OpenShift username** (what `oc whoami`
+> returns), **not** their email. This cluster authenticates users by bare
+> username, so an email subject matches no one — reads still work (via the
+> shared reader) but trace pushes are denied.
 
 Add the file to `experiments/kustomization.yaml`:
 
@@ -108,7 +113,7 @@ Datasets are first-class RBAC resources (`mlflow.kubeflow.org/datasets`), govern
     name: mlflow-dataset-<dataset-name>
   subjects:
     - kind: User
-      name: <user>@redhat.com
+      name: <user>
       apiGroup: rbac.authorization.k8s.io
   roleRef:
     kind: Role

@@ -25,15 +25,18 @@ rules:
     resourceNames: ["EXPERIMENT_NAME"]
     verbs: ["get", "list", "update", "delete"]
 ---
-# Bind the experiment maintainer(s)
-# Add additional subjects for each user
+# Bind the experiment maintainer(s) — one subject per user.
+# IMPORTANT: `name` is the user's OpenShift username (what `oc whoami` returns),
+# NOT their email. This cluster authenticates users by bare username, so an
+# email subject (e.g. user@redhat.com) matches no one and silently grants
+# nothing — reads still work via the shared reader, but writes are denied.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: mlflow-experiment-EXPERIMENT_NAME
 subjects:
   - kind: User
-    name: USER@redhat.com
+    name: USER
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
