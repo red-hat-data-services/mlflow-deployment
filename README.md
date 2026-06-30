@@ -37,5 +37,6 @@ patches/                    # Python patches applied by Containerfile
 ## Documentation
 
 - [docs/architecture.md](docs/architecture.md) — authorization flow, RBAC model, pod namespace fallback
-- [docs/onboarding.md](docs/onboarding.md) — adding a new agent to MLflow trace collection
+- [docs/onboarding.md](docs/onboarding.md) — granting a new agent access (experiment + scoped RBAC)
+- [docs/usage.md](docs/usage.md) — configuring a client to push traces (GitLab CI, agent-eval-harness, generic MLflow client)
 - [docs/storage.md](docs/storage.md) — artifact store (S3): proxied uploads, IAM policy, verification
