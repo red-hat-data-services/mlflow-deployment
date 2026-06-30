@@ -139,7 +139,7 @@ sends `MLFLOW_TRACKING_TOKEN` as the `Authorization: Bearer` header and honors
 
 ```bash
 export MLFLOW_TRACKING_URI=https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com
-export MLFLOW_TRACKING_TOKEN=$(oc create token mlflow-ci-traces -n ambient-code--mlflow --duration=24h)
+export MLFLOW_TRACKING_TOKEN=$(oc whoami -t)   # or the service-account token (see Token above)
 export REQUESTS_CA_BUNDLE=/tmp/RH-IT-Root-CA.pem
 ```
 
