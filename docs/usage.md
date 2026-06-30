@@ -20,27 +20,44 @@ They all need the same connection details; only the wiring differs.
 
 ### TLS — trust the Red Hat IT CA
 
-The Route's certificate is signed by the Red Hat IT CA, which Python's `requests`
-(used by both the MLflow client and agentic-ci) does not trust by default. Point
-`REQUESTS_CA_BUNDLE` at it:
+The Route's certificate is signed by the Red Hat IT CA. Most Python clients use
+`requests` (via `certifi`), which does not trust it by default — point
+`REQUESTS_CA_BUNDLE` at the CA:
 
 ```bash
 curl -sL https://certs.corp.redhat.com/certs/2022-IT-Root-CA.pem -o /tmp/RH-IT-Root-CA.pem
 export REQUESTS_CA_BUNDLE=/tmp/RH-IT-Root-CA.pem
 ```
 
+(agent-eval-harness is an exception — it uses your system trust store, which
+already trusts the Red Hat IT CA, so this is optional there.)
+
 ### Token
 
-Use the `mlflow-ci-traces` service-account token your MLflow admin provided during
-onboarding. With cluster access you can mint one yourself:
+Authenticate with a **Bearer token**. Which token depends on who is calling:
 
-```bash
-oc create token mlflow-ci-traces -n ambient-code--mlflow --duration=24h
-```
+- **CI / automation** — the shared `mlflow-ci-traces` service-account token your
+  MLflow admin provides during onboarding. It can read experiments and push
+  traces/usage. With cluster access you can mint one:
 
-> The service account can read experiments and push traces/usage, but **cannot
-> create experiments** — the experiment must already exist (created during
-> onboarding). The same applies to datasets.
+  ```bash
+  oc create token mlflow-ci-traces -n ambient-code--mlflow --duration=24h
+  ```
+
+- **Interactive / personal use** — your own OpenShift token, so you act as
+  yourself rather than the shared account (handy when running things from your
+  laptop):
+
+  ```bash
+  export MLFLOW_TRACKING_TOKEN=$(oc whoami -t)
+  ```
+
+  You get whatever your Red Hat account is authorized for: every authenticated
+  user can read experiments and traces; pushing to or managing an experiment
+  requires your account to maintain it (or be an admin).
+
+> Creating experiments (and datasets) is **admin-only** — for everyone else the
+> experiment must already exist (created during onboarding).
 
 ## 1. GitLab CI with agentic-ci
 
@@ -113,12 +130,14 @@ agentic-ci harness documentation.
 ## 2. agent-eval-harness (`/eval-mlflow`)
 
 The eval harness uses the standard MLflow client, so it reads the same env vars.
-Set them, then run the eval and push:
+Running it yourself, authenticate as you (see [Token](#token)):
 
 ```bash
 export MLFLOW_TRACKING_URI=https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com
-export MLFLOW_TRACKING_TOKEN=$(oc create token mlflow-ci-traces -n ambient-code--mlflow --duration=24h)
-export REQUESTS_CA_BUNDLE=/tmp/RH-IT-Root-CA.pem
+export MLFLOW_TRACKING_TOKEN=$(oc whoami -t)
+# REQUESTS_CA_BUNDLE is optional here: agent-eval-harness uses your system trust
+# store, which already trusts the Red Hat IT CA. Set it only if yours does not:
+# export REQUESTS_CA_BUNDLE=/tmp/RH-IT-Root-CA.pem
 ```
 
 ```text

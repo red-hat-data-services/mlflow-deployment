@@ -58,7 +58,7 @@ resources:
 After the PR is merged, an MLflow admin:
 
 - creates the experiment in the [MLflow UI](https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com/)
-- provides the agent team with the `mlflow-ci-traces` service-account token used to push traces
+- provides the agent team with the `mlflow-ci-traces` service-account token used to push traces from CI (for interactive use, people authenticate as themselves — see [usage.md](usage.md))
 
 To grant access to datasets too, see [Managing datasets](#managing-datasets) — they are onboarded with their own role.
 
