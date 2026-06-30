@@ -36,13 +36,9 @@ already trusts the Red Hat IT CA, so this is optional there.)
 
 Authenticate with a **Bearer token**. Which token depends on who is calling:
 
-- **CI / automation** — the shared `mlflow-ci-traces` service-account token your
-  MLflow admin provides during onboarding. It can read experiments and push
-  traces/usage. With cluster access you can mint one:
-
-  ```bash
-  oc create token mlflow-ci-traces -n ambient-code--mlflow --duration=24h
-  ```
+- **CI / automation** — the shared `mlflow-ci-traces` service-account token,
+  provided by your MLflow admin during onboarding. It can read experiments and
+  push traces/usage. Set it as the `MLFLOW_TRACKING_TOKEN` CI variable.
 
 - **Interactive / personal use** — your own OpenShift token, so you act as
   yourself rather than the shared account (handy when running things from your
