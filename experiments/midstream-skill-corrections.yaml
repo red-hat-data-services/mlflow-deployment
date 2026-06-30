@@ -24,53 +24,57 @@ rules:
     resources: ["services/traces"]
     verbs: ["create"]
 ---
-# Bind the experiment maintainer(s): Selbi Siddiqi's team
+# Bind the experiment maintainer(s): Selbi Siddiqi's team.
+# Subjects are the OpenShift usernames the cluster's OpenID IDP resolves to —
+# the bare RH uid (e.g. `whardy`), NOT `whardy@redhat.com`. Confirmed via
+# `oc get user '~'` (-> name: whardy). Using the @redhat.com form silently
+# matches no one, so per-user grants never take effect.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: mlflow-experiment-midstream-skill-corrections
 subjects:
   - kind: User
-    name: aottimo@redhat.com
+    name: aottimo
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: bwhorton@redhat.com
+    name: bwhorton
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: cmiyai@redhat.com
+    name: cmiyai
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: dahuang@redhat.com
+    name: dahuang
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: dbarbuzz@redhat.com
+    name: dbarbuzz
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: deepakku@redhat.com
+    name: deepakku
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: dosmith@redhat.com
+    name: dosmith
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: dtrifiro@redhat.com
+    name: dtrifiro
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: equarmjn@redhat.com
+    name: equarmjn
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: mwoodson@redhat.com
+    name: mwoodson
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: takumar@redhat.com
+    name: takumar
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: tmuttaki@redhat.com
+    name: tmuttaki
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: whardy@redhat.com
+    name: whardy
     apiGroup: rbac.authorization.k8s.io
   - kind: User
-    name: yakif@redhat.com
+    name: yakif
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
