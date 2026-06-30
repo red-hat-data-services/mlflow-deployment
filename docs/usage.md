@@ -14,7 +14,7 @@ They all need the same connection details; only the wiring differs.
 | | Value |
 |---|---|
 | Tracking URI | `https://mlflow.apps.int.spoke.prod.us-west-2.aws.paas.redhat.com` |
-| Auth | Bearer token — the `mlflow-ci-traces` service-account token from onboarding |
+| Auth | Bearer token — the `mlflow-ci-traces` service account (CI) or your own account via `oc whoami -t` (interactive); see [Token](#token) |
 | TLS | the Route certificate is signed by the Red Hat IT CA; the client must trust it |
 | Experiment | your experiment name — created during onboarding; **it must already exist** |
 
