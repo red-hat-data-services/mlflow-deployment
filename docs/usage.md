@@ -42,9 +42,10 @@ Authenticate with a **Bearer token**. Which token depends on who is calling:
 
 - **Interactive / personal use** — your own OpenShift token, so you act as
   yourself rather than the shared account (handy when running things from your
-  laptop):
+  laptop). Log in to the cluster, then read your token:
 
   ```bash
+  oc login --server=https://api.mpp-w2-prod.0jgd.p1.openshiftapps.com:6443 --web
   export MLFLOW_TRACKING_TOKEN=$(oc whoami -t)
   ```
 
