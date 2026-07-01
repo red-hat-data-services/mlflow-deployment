@@ -5,3 +5,4 @@ resources:
   - rfe-assessor.yaml
   - midstream-skill-corrections.yaml
   - tau2-bench.yaml
+  - acp-general.yaml
