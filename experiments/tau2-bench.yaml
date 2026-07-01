@@ -21,7 +21,7 @@ metadata:
   name: mlflow-experiment-tau2-bench
 subjects:
 - kind: User
-  name: BetaGoal
+  name: xya
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
