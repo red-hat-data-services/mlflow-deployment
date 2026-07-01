@@ -1,0 +1,29 @@
+# tau2-bench experiment
+# Benchmark: https://github.com/sierra-research/tau2-bench
+# Domains: airline, retail, telecom, banking_knowledge
+#
+# Copy this file to red-hat-data-services/mlflow-deployment/experiments/tau2-bench.yaml
+# and add it to experiments/kustomization.yaml (see kustomization-snippet.yaml).
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-experiment-tau2-bench
+rules:
+- apiGroups: ["mlflow.kubeflow.org"]
+  resources: ["experiments"]
+  resourceNames: ["tau2-bench"]
+  verbs: ["get", "list", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-experiment-tau2-bench
+subjects:
+- kind: User
+  name: BetaGoal
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-experiment-tau2-bench
+  apiGroup: rbac.authorization.k8s.io
