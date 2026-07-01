@@ -1,0 +1,27 @@
+# MLflow dataset: jeder-dataset-smoke
+# Maintainer: jeder (interactive auth via OIDC/SSO)
+---
+# Scoped role: manage a single dataset
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-dataset-jeder-dataset-smoke
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["datasets"]
+    resourceNames: ["jeder-dataset-smoke"]
+    verbs: ["get", "list", "update", "delete"]
+---
+# Bind the dataset maintainer(s) — one subject per user.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-dataset-jeder-dataset-smoke
+subjects:
+  - kind: User
+    name: jeder
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-dataset-jeder-dataset-smoke
+  apiGroup: rbac.authorization.k8s.io
