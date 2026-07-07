@@ -8,3 +8,4 @@ resources:
   - acp-general.yaml
   - jeder-opencode.yaml
   - jeder-dataset-smoke-dataset.yaml
+  - crucible.yaml
