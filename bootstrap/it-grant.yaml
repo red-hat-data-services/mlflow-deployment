@@ -4,8 +4,8 @@
 # The ambient-code tenant (both the ArgoCD account and namespace admins) cannot
 # create these resources themselves:
 #
-#   1. Roles granting mlflow.kubeflow.org/* and services/traces — blocked by
-#      Kubernetes privilege-escalation prevention (the tenant doesn't hold these
+#   1. Roles granting mlflow.kubeflow.org/* — blocked by Kubernetes
+#      privilege-escalation prevention (the tenant doesn't hold these
 #      permissions).
 #   2. ClusterRoleBindings — cluster-scoped, not permitted for the tenant.
 #
@@ -38,10 +38,6 @@ rules:
   - apiGroups: ["mlflow.kubeflow.org"]
     resources: ["experiments", "registeredmodels", "datasets", "jobs"]
     verbs: ["*"]
-  # Hold the permission the trace-pusher role delegates
-  - apiGroups: [""]
-    resources: ["services/traces"]
-    verbs: ["create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

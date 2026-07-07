@@ -34,17 +34,16 @@ rules:
     resources: ["experiments", "registeredmodels", "datasets", "jobs"]
     verbs: ["*"]
 ---
-# Role: push traces via /v1/traces
-# Two layers: OAuth proxy delegate-urls checks services/traces create,
-# then kubernetes-auth checks mlflow.kubeflow.org experiments update.
+# Role: push traces to any experiment via /v1/traces.
+# The kubernetes-auth plugin maps POST /v1/traces to `experiments update`
+# (name-scoped by the payload's experiment_id). Not resourceNames-scoped
+# because CI pushes across all experiments; per-experiment roles restrict
+# individual maintainers.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: mlflow-trace-pusher
 rules:
-  - apiGroups: [""]
-    resources: ["services/traces"]
-    verbs: ["create"]
   - apiGroups: ["mlflow.kubeflow.org"]
     resources: ["experiments"]
     verbs: ["update"]
