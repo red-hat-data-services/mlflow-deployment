@@ -6,19 +6,18 @@
 
 ### Two auth layers
 
-1. **OAuth Proxy** (sidecar, port 4180) — handles browser login via OpenShift OAuth and forwards the user's Bearer token to MLflow. Enforces two delegate-urls gates:
-   - `/v1/traces` → SAR check: `services/traces create` (CI trace ingestion)
-   - `/` → SAR check: `mlflow.kubeflow.org/experiments get` (general access)
+1. **OAuth Proxy** (sidecar, port 4180) — handles browser login via OpenShift OAuth and forwards the user's Bearer token to MLflow. Single delegate-urls gate:
+   - `/` → SAR check: `mlflow.kubeflow.org/experiments get` (any authenticated user via `mlflow-reader-authenticated`)
 
-2. **MLflow kubernetes-auth** (plugin) — validates the Bearer token via Kubernetes SelfSubjectAccessReview, mapping HTTP methods to K8s verbs (`GET→get`, `POST→create`, `DELETE→delete`) against resources in the `mlflow.kubeflow.org` API group. The `/v1/traces` OTLP endpoint has no validator and is only gated by the OAuth proxy.
+2. **MLflow kubernetes-auth** (plugin) — validates the Bearer token via Kubernetes SelfSubjectAccessReview, mapping HTTP methods to K8s verbs (`GET→get`, `POST→create`, `DELETE→delete`) against resources in the `mlflow.kubeflow.org` API group. The OTLP `/v1/traces` endpoint is covered by the plugin and maps to `experiments update` (name-scoped by the payload's `experiment_id`).
 
 ### Request paths
 
 | Path | Auth layer | Description |
 |------|-----------|-------------|
 | Browser → UI | OAuth proxy (login) + kubernetes-auth | Full RBAC per resource |
-| CI → `/v1/traces` | OAuth proxy (`services/traces create`) | Trace ingestion only |
-| CI → `/api/2.0/mlflow/*` | OAuth proxy + kubernetes-auth | Experiment lookup |
+| Any → `/v1/traces` | OAuth proxy (`experiments get`, catch-all) + kubernetes-auth (`experiments update`, name-scoped) | Trace ingestion |
+| Any → `/api/2.0/mlflow/*` | OAuth proxy + kubernetes-auth | Full RBAC per resource |
 
 ### RBAC resources
 
