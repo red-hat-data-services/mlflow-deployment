@@ -10,3 +10,4 @@ resources:
   - jeder-dataset-smoke-dataset.yaml
   - crucible.yaml
   - fullsend.yaml
+  - mlflow-cve-triage.yaml
