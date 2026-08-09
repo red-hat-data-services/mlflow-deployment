@@ -12,3 +12,4 @@ resources:
   - fullsend.yaml
   - mlflow-cve-triage.yaml
   - lightspeed-agent.yaml
+  - lightspeed-agent-eval.yaml
