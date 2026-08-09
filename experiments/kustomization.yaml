@@ -13,3 +13,4 @@ resources:
   - mlflow-cve-triage.yaml
   - lightspeed-agent.yaml
   - lightspeed-agent-eval.yaml
+  - lightspeed-agent-eval-dataset.yaml
