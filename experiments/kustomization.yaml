@@ -11,3 +11,4 @@ resources:
   - crucible.yaml
   - fullsend.yaml
   - mlflow-cve-triage.yaml
+  - lightspeed-agent.yaml
