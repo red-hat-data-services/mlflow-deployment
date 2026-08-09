@@ -1,0 +1,46 @@
+# lightspeed-agent-eval experiment
+# Agent: https://github.com/RHEcosystemAppEng/google-lightspeed-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-experiment-lightspeed-agent-eval
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    resourceNames: ["lightspeed-agent-eval"]
+    verbs: ["get", "list", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-experiment-lightspeed-agent-eval
+subjects:
+  - kind: User
+    name: ishishov
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: csoceanu
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: gziv
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: ilpinto
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: hgartner
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: ccamacho
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: ltomasbo
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: sdashet
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-experiment-lightspeed-agent-eval
+  apiGroup: rbac.authorization.k8s.io
