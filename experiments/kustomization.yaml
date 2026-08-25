@@ -14,3 +14,7 @@ resources:
   - lightspeed-agent.yaml
   - lightspeed-agent-eval.yaml
   - lightspeed-agent-eval-dataset.yaml
+  - package-onboarding.yaml
+  - knowledge-sync.yaml
+  - code-review.yaml
+  - pipeline-failure-analyzer.yaml
