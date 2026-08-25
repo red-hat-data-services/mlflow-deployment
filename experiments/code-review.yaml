@@ -1,0 +1,24 @@
+---
+# Scoped role: grants access to a single experiment
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-experiment-code-review
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    resourceNames: ["code-review"]
+    verbs: ["get", "list", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-experiment-code-review
+subjects:
+  - kind: User
+    name: vshawrh
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-experiment-code-review
+  apiGroup: rbac.authorization.k8s.io
