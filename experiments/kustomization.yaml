@@ -18,3 +18,4 @@ resources:
   - knowledge-sync.yaml
   - code-review.yaml
   - pipeline-failure-analyzer.yaml
+  - ai-hub-cve-triage.yaml
