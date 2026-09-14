@@ -1,0 +1,61 @@
+# HyperShell Amber review experiment.
+# Agent: https://github.com/openshift-online/hypershell-gitops/tree/main/clusters/hysh-ibm-01/apps/amber-review
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-experiment-hypershell-amber-review
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    resourceNames: ["hypershell-amber-review"]
+    verbs: ["get", "list", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-experiment-hypershell-amber-review
+subjects:
+  - kind: User
+    name: amarin
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: bsquizza
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: crizzo
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: croche
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jgiola
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jjaggars
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jsell
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jbarea
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: kriedese
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: kysquizz
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: mturansk
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: mknop
+    apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: wesgreen
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: mlflow-experiment-hypershell-amber-review
+  apiGroup: rbac.authorization.k8s.io
