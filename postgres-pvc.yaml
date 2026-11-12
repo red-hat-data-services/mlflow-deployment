@@ -10,4 +10,4 @@ spec:
   storageClassName: aws-ebs
   resources:
     requests:
-      storage: 20Gi
+      storage: 50Gi
