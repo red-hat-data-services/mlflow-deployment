@@ -5,7 +5,7 @@ resources:
   - postgres-deployment.yaml
   - postgres-service.yaml
   - postgres-pvc.yaml
-  - postgres-retention-cronjob.yaml
+  - trace-retention-cronjob.yaml
   - proxy-service.yaml
   - route.yaml
   - rbac.yaml
