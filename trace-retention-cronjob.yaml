@@ -1,0 +1,115 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mlflow-trace-retention
+  labels:
+    app: mlflow
+spec:
+  # 02:17 UTC daily — off-peak, offset off the hour to avoid cluster-wide cron pileup
+  schedule: "17 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 10800
+      template:
+        metadata:
+          labels:
+            app: mlflow-trace-retention
+        spec:
+          restartPolicy: Never
+          serviceAccountName: mlflow-trace-retention
+          volumes:
+            - name: sa-token
+              projected:
+                sources:
+                  - serviceAccountToken:
+                      path: token
+                      expirationSeconds: 3600
+          containers:
+            - name: retention
+              # Same image and digest as the mlflow Deployment, so the client
+              # always matches the server it talks to. Bump both together.
+              image: quay.io/astefanu/mlflow:latest@sha256:41cc0ac9771ec3cf3140f24246bb9bb1f9332f96e419c4056e557ee453e6b1b1
+              command:
+                - /usr/bin/python3.12
+                - -c
+                - |
+                  import os, time
+                  from mlflow import MlflowClient
+                  from mlflow.entities import ViewType
+
+                  TOKEN = "/var/run/secrets/mlflow/token"
+                  DAYS = int(os.environ.get("RETENTION_DAYS", "60"))
+                  BATCH = int(os.environ.get("BATCH_SIZE", "200"))
+
+                  def auth():
+                      # Re-read on every call: the projected token rotates while
+                      # the job runs, and the client reads this env var per request.
+                      with open(TOKEN) as fh:
+                          os.environ["MLFLOW_TRACKING_TOKEN"] = fh.read().strip()
+
+                  auth()
+                  client = MlflowClient()
+                  cutoff_ms = int((time.time() - DAYS * 86400) * 1000)
+                  print(f"mlflow-trace-retention: cutoff={DAYS}d batch={BATCH}", flush=True)
+
+                  experiments, page = [], None
+                  while True:
+                      auth()
+                      got = client.search_experiments(
+                          view_type=ViewType.ALL, max_results=1000, page_token=page
+                      )
+                      experiments.extend(got)
+                      page = got.token
+                      if not page:
+                          break
+
+                  grand = 0
+                  for exp in experiments:
+                      total = 0
+                      while True:
+                          auth()
+                          n = client.delete_traces(
+                              experiment_id=exp.experiment_id,
+                              max_timestamp_millis=cutoff_ms,
+                              max_traces=BATCH,
+                          )
+                          if not n:
+                              break
+                          total += n
+                          print(f"  {exp.name}: {n} (subtotal {total})", flush=True)
+                          # Let the backing Postgres settle between batches
+                          time.sleep(2)
+                      if total:
+                          print(f"{exp.name}: removed {total}", flush=True)
+                      grand += total
+
+                  print(f"mlflow-trace-retention: removed {grand} traces older than {DAYS}d", flush=True)
+              env:
+                # In-cluster, straight to MLflow. This bypasses the oauth-proxy
+                # sidecar (browser login only); the kubernetes-auth plugin inside
+                # MLflow still runs a SubjectAccessReview on the bearer token.
+                - name: MLFLOW_TRACKING_URI
+                  value: http://mlflow:5000
+                # Observed ingest is 290-464 MB/day, so 60 days settles around
+                # 17-28 GB of the 50 GB volume. 90 days would reach 26-42 GB,
+                # which is what filled the previous 20 GB volume.
+                - name: RETENTION_DAYS
+                  value: "60"
+                - name: BATCH_SIZE
+                  value: "200"
+              volumeMounts:
+                - name: sa-token
+                  mountPath: /var/run/secrets/mlflow
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
