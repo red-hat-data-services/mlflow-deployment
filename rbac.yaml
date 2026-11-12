@@ -101,3 +101,40 @@ roleRef:
   kind: Role
   name: mlflow-reader
   apiGroup: rbac.authorization.k8s.io
+---
+# ServiceAccount for the nightly trace retention CronJob
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow-trace-retention
+---
+# Role: prune traces.
+#
+# The kubernetes-auth plugin does not map HTTP methods to verbs generically — it
+# carries an explicit per-endpoint rule table (mlflow_kubernetes_plugins/auth/rules_base.py).
+# The two calls this job makes resolve as:
+#
+#   SearchExperiments -> experiments "list"
+#   DeleteTraces      -> experiments "update"   (NOT "delete", and NOT "create")
+#
+# So trace deletion needs `update`, the same verb as trace ingestion.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mlflow-trace-pruner
+rules:
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["experiments"]
+    verbs: ["get", "list", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mlflow-trace-retention
+subjects:
+  - kind: ServiceAccount
+    name: mlflow-trace-retention
+roleRef:
+  kind: Role
+  name: mlflow-trace-pruner
+  apiGroup: rbac.authorization.k8s.io
