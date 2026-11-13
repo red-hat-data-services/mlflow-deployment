@@ -38,9 +38,24 @@ spec:
                 - /usr/bin/python3.12
                 - -c
                 - |
-                  import os, time
+                  import os, socket, time
                   from mlflow import MlflowClient
                   from mlflow.entities import ViewType
+
+                  # Talk to MLflow in-cluster by ClusterIP, not by Service name.
+                  # MLflow's DNS-rebinding guard (TrustedHostMiddleware) validates the
+                  # Host header against an allowlist of localhost plus the RFC1918
+                  # ranges -- which covers the 172.30.* service CIDR but NOT the DNS
+                  # name, so "Host: mlflow:5000" is rejected with
+                  #   403 Invalid Host header - possible DNS rebinding attack detected
+                  # Setting MLFLOW_SERVER_ALLOWED_HOSTS on the server would REPLACE all
+                  # 28 defaults (get_allowed_hosts_from_env() or get_default_allowed_hosts()),
+                  # so resolving here keeps the fix contained to this job.
+                  # This bypasses the oauth-proxy sidecar (browser login only); the
+                  # kubernetes-auth plugin inside MLflow still runs a SubjectAccessReview.
+                  _host = os.environ.get("MLFLOW_SERVICE_HOST") or socket.gethostbyname("mlflow")
+                  _port = os.environ.get("MLFLOW_SERVICE_PORT", "5000")
+                  os.environ["MLFLOW_TRACKING_URI"] = f"http://{_host}:{_port}"
 
                   TOKEN = "/var/run/secrets/mlflow/token"
                   DAYS = int(os.environ.get("RETENTION_DAYS", "60"))
@@ -55,7 +70,8 @@ spec:
                   auth()
                   client = MlflowClient()
                   cutoff_ms = int((time.time() - DAYS * 86400) * 1000)
-                  print(f"mlflow-trace-retention: cutoff={DAYS}d batch={BATCH}", flush=True)
+                  print(f"mlflow-trace-retention: endpoint={os.environ['MLFLOW_TRACKING_URI']} "
+                        f"cutoff={DAYS}d batch={BATCH}", flush=True)
 
                   experiments, page = [], None
                   while True:
@@ -90,11 +106,6 @@ spec:
 
                   print(f"mlflow-trace-retention: removed {grand} traces older than {DAYS}d", flush=True)
               env:
-                # In-cluster, straight to MLflow. This bypasses the oauth-proxy
-                # sidecar (browser login only); the kubernetes-auth plugin inside
-                # MLflow still runs a SubjectAccessReview on the bearer token.
-                - name: MLFLOW_TRACKING_URI
-                  value: http://mlflow:5000
                 # Observed ingest is 290-464 MB/day, so 60 days settles around
                 # 17-28 GB of the 50 GB volume. 90 days would reach 26-42 GB,
                 # which is what filled the previous 20 GB volume.
